@@ -1,0 +1,129 @@
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      *                                                       *
+      *  THIS RELEASE STREAM IS OPEN TO BUG FIXES.            *
+      *                                                       *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+This file tracks the status of releases in the 1.9.x line.
+
+See http://subversion.apache.org/docs/community-guide/releasing.html#release-stabilization
+for details on how release lines and voting work, what kinds of bugs can
+delay a release, etc.
+
+Status of 1.9.5:
+
+Candidate changes:
+==================
+
+ * r1701488
+   Issue #4592 "fix contrib check-mime-type.pl for changes to 'svnlook proplist'
+     output", http://subversion.tigris.org/issues/show_bug.cgi?id=4592
+   Justification:
+     Make this contributed script work again, after 1.7.8 broke it.
+   Notes:
+     Brett Randall put effort into contributing this fix: see the dev@ email
+     thread "[patch][reboot-topic] fix check-mime-type.pl for changes to
+     'svnlook proplist' output" started by him on 2015-08-07, archived at
+     e.g. <http://svn.haxx.se/dev/archive-2015-08/0047.shtml> or
+     <http://mail-archives.apache.org/mod_mbox/subversion-dev/201508.mbox/%3CCALeEUB56NVCR0nCZ2rYki6oKQNcVPPLvWTeCoYyrMqitsov0ag@mail.gmail.com%3E>.
+   Votes:
+     +0: julianfoad, rhuijben (he says it works, but I haven't reviewed or tested)
+     +0: danielsh (not tested; would be nice to have a $ anchor in the pattern)
+
+ * r1705038
+   Fix issue 4607, patch with missing newline removes newline when applied.
+   Justification:
+     Silently makes unexpected changes.
+   Votes:
+     +1: philip
+     +0: rhuijben (while I agree that this patch fixes a problem, I don't
+                   think this is the right backport. This patch changes the
+                   behavior of a public api (with no known users except
+                   libsvn_client) in a specific way for this issue. On trunk
+                   this behavior change was reverted when a better fix was
+                   implemented)
+
+ * r1722164
+   Filter out -Wdate-time from SWIG_CPPFLAGS
+   Justification:
+     Fixes bindings build failure when -Wdate-time is present in $CPPFLAGS
+   Votes:
+     +1: jamessan
+     +1: rhuijben (Would prefer some redesign for trunk though)
+
+ * r1721488, r1721648
+   Enable building bindings with SWIG >= 3.0.6
+   Justification:
+     Enable building bindings with SWIG 3.x.  SWIG 2.x is end-of-life (no
+     releases since 2014) and is starting to be removed from Linux
+     distributions.
+   Branch:
+     ^/subversion/branches/1.9.x-r1721488
+   Votes:
+     +1: jamessan
+
+ * r1721285
+   Quadruple the maximum cacheable directory size in FSFS.
+   Justification:
+     Not caching large directories has a massive impact on runtime with
+     the cutoff point being about 9000 entries for the default cache size.
+     Also, memory usage with mod_dav_svn may go through the roof for
+     uncached directories.
+   Votes:
+     +1: stefan2, steveking
+     -0: stsp (merge conflict; needs a backport branch)
+
+ * r1724448
+   Fix handling of newly secured subdirectories in a working copy
+   Justification:
+     Regression against <= 1.6.x. Without this patch a directory that
+     (still) exists locally but to which a user has no access is handled as
+     a local obstruction on the next update that brings a change to this tree
+     and the local working copy state is broken. This patch handles the
+     incomming change as a delete, properly marking a tree conflict if
+     necessary, allowing a user to make a copy of local changes.
+     (Committing a copy would be hard though... as the user most likely
+      doesn't have the rights to copy from what is now hidden).
+   Votes:
+     +1: rhuijben
+
+ * r1663286, r1741071, r1741072, r1741073, r1741078, r1741096, r1741200,
+   r1741206
+   Fix the source of "database is locked" errors when opening rep-cache.db.
+   Justification:
+     Users can get unexpected errors during operations that open rep-cache.db,
+     e.g., when calling 'svnadmin verify'.
+   Branch:
+     ^/subversion/branches/1.9.x-rep-cache-db-fixes
+   Notes:
+     r1663286 only affects maintainer mode and is included to avoid conflicts.
+     r1741073 fixes a potential crash in our sqlite helper.
+     r1741096 and r1741200 are the core fix for this issue.
+     r1741206 fixes a potential problem with the long-living db connection.
+     .
+     The backport branch is required, because r1741096 adds a new error code
+     that can't be backported as is without breaking compatibility between
+     patch versions.
+   Votes:
+     +1: kotkov, ivan
+
+ * 1748514
+   Fix a crash in 'svn resolve'.
+   Justification:
+     SVN should not segfault. User complained.
+   Votes:
+     +1: stsp, jamessan
+
+ * r1715777
+   Convert assertion failure to error if configuration file contains just one
+   0xEE character.
+   Justification:
+     Assertion on invalid config is not good behavior.
+   Votes:
+     +1: ivan
+
+Veto-blocked changes:
+=====================
+
+Approved changes:
+=================
